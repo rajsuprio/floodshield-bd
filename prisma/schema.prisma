@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  FARMER
+  VOLUNTEER
+  NGO
+  ADMIN
+}
+
+enum ClaimStatus {
+  PENDING
+  UNDER_REVIEW
+  FIELD_VERIFIED
+  APPROVED
+  REJECTED
+  RELIEF_ASSIGNED
+  COMPLETED
+}
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  DELIVERED
+  COMPLETED
+}
+
+enum RiskLevel {
+  LOW
+  MODERATE
+  HIGH
+  EMERGENCY
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  password      String
+  role          Role           @default(FARMER)
+  createdAt     DateTime       @default(now())
+  farmerProfile FarmerProfile?
+  verifications FieldVerification[]
+  reliefAssigned ReliefDistribution[]
+}
+
+model FarmerProfile {
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  user         User          @relation(fields: [userId], references: [id])
+  phone        String?
+  district     String
+  upazila      String
+  union        String?
+  landPlots    LandPlot[]
+  damageClaims DamageClaim[]
+}
+
+model LandPlot {
+  id            String        @id @default(cuid())
+  farmerId      String
+  farmer        FarmerProfile @relation(fields: [farmerId], references: [id])
+  cropType      String
+  landSize      Float
+  district      String
+  upazila       String
+  union         String?
+  latitude      Float
+  longitude     Float
+  plantingDate  DateTime?
+  harvestDate   DateTime?
+  createdAt     DateTime      @default(now())
+  damageClaims  DamageClaim[]
+}
+
+model FloodZone {
+  id          String    @id @default(cuid())
+  name        String
+  riskLevel   RiskLevel
+  latitude    Float
+  longitude   Float
+  radius      Float
+  description String?
+  createdAt   DateTime  @default(now())
+}
+
+model DamageClaim {
+  id             String        @id @default(cuid())
+  farmerId       String
+  farmer         FarmerProfile @relation(fields: [farmerId], references: [id])
+  landId         String
+  land           LandPlot      @relation(fields: [landId], references: [id])
+  cropType       String
+  affectedArea   Float
+  lossPercentage Float
+  description    String?
+  dateOfDamage   DateTime
+  status         ClaimStatus   @default(PENDING)
+  priorityScore  Int           @default(0)
+  createdAt      DateTime      @default(now())
+  photos         ClaimPhoto[]
+  verification   FieldVerification?
+  relief         ReliefDistribution?
+}
+
+model ClaimPhoto {
+  id        String      @id @default(cuid())
+  claimId   String
+  claim     DamageClaim @relation(fields: [claimId], references: [id])
+  url       String
+  publicId  String
+  createdAt DateTime    @default(now())
+}
+
+model FieldVerification {
+  id                 String      @id @default(cuid())
+  claimId            String      @unique
+  claim              DamageClaim @relation(fields: [claimId], references: [id])
+  volunteerId        String
+  volunteer          User        @relation(fields: [volunteerId], references: [id])
+  notes              String?
+  verificationStatus String
+  photoUrl           String?
+  createdAt          DateTime    @default(now())
+}
+
+model ReliefDistribution {
+  id                String         @id @default(cuid())
+  claimId           String         @unique
+  claim             DamageClaim    @relation(fields: [claimId], references: [id])
+  assignedVolunteer String?
+  volunteer         User?          @relation(fields: [assignedVolunteer], references: [id])
+  packageDetails    String
+  deliveryStatus    DeliveryStatus @default(PENDING)
+  createdAt         DateTime       @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
