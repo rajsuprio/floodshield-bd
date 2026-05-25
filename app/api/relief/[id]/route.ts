@@ -4,7 +4,7 @@ import { verifyToken } from "@/lib/auth"
 
 export async function PUT(
   req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = req.cookies.get("token")?.value
@@ -13,7 +13,7 @@ export async function PUT(
     const payload = verifyToken(token)
     if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const { id } = await context.params
+    const { id } = await params
     const { deliveryStatus } = await req.json()
 
     const relief = await prisma.reliefDistribution.update({
