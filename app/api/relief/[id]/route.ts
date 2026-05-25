@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { verifyToken } from "@/lib/auth"
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
     const token = req.cookies.get("token")?.value
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -10,10 +13,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const payload = verifyToken(token)
     if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
+    const { id } = await context.params
     const { deliveryStatus } = await req.json()
 
     const relief = await prisma.reliefDistribution.update({
-      where: { id: params.id },
+      where: { id },
       data: { deliveryStatus },
     })
 
