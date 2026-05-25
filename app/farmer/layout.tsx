@@ -11,7 +11,7 @@ import {
   ClipboardList,
   Menu,
   X,
-  Wave,
+  Waves,
 } from "lucide-react"
 
 const navItems = [
