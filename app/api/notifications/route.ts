@@ -16,14 +16,19 @@ export async function GET(req: NextRequest) {
       take: 20,
     })
 
-    return NextResponse.json(notifications)
+    const unreadCount = notifications.filter((n) => !n.read).length
+
+    return NextResponse.json({
+      notifications,
+      unreadCount,
+    })
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function PATCH(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -31,13 +36,12 @@ export async function POST(req: NextRequest) {
     const payload = verifyToken(token)
     if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const { userId, title, message } = await req.json()
-
-    const notification = await prisma.notification.create({
-      data: { userId, title, message },
+    await prisma.notification.updateMany({
+      where: { userId: payload.userId, read: false },
+      data: { read: true },
     })
 
-    return NextResponse.json(notification, { status: 201 })
+    return NextResponse.json({ success: true })
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })

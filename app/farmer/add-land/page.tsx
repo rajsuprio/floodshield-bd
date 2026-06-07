@@ -59,7 +59,7 @@ export default function AddLandPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Register New Land</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Register New Land</h1>
         <p className="text-gray-500 mt-1">Add your agricultural land details</p>
       </div>
 
@@ -86,45 +86,45 @@ export default function AddLandPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label>Crop Type</Label>
-                <Input placeholder="e.g. Rice, Wheat" {...register("cropType")} />
+                <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" placeholder="e.g. Rice, Wheat" {...register("cropType")} />
                 {errors.cropType && <p className="text-red-500 text-xs">{errors.cropType.message}</p>}
               </div>
               <div className="space-y-1">
                 <Label>Land Size (acres)</Label>
-                <Input type="number" step="0.01" placeholder="e.g. 2.5" {...register("landSize")} />
+                <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" type="number" step="0.01" placeholder="e.g. 2.5" {...register("landSize")} />
                 {errors.landSize && <p className="text-red-500 text-xs">{errors.landSize.message}</p>}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label>District</Label>
-                <Input placeholder="e.g. Sylhet" {...register("district")} />
+                <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" placeholder="e.g. Sylhet" {...register("district")} />
                 {errors.district && <p className="text-red-500 text-xs">{errors.district.message}</p>}
               </div>
               <div className="space-y-1">
                 <Label>Upazila</Label>
-                <Input placeholder="e.g. Companiganj" {...register("upazila")} />
+                <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" placeholder="e.g. Companiganj" {...register("upazila")} />
                 {errors.upazila && <p className="text-red-500 text-xs">{errors.upazila.message}</p>}
               </div>
             </div>
 
             <div className="space-y-1">
               <Label>Union (optional)</Label>
-              <Input placeholder="e.g. Islampur" {...register("union")} />
+              <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" placeholder="e.g. Islampur" {...register("union")} />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label>Planting Date</Label>
-                <Input type="date" {...register("plantingDate")} />
+                <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" type="date" {...register("plantingDate")} />
               </div>
               <div className="space-y-1">
                 <Label>Harvest Date</Label>
-                <Input type="date" {...register("harvestDate")} />
+                <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" type="date" {...register("harvestDate")} />
               </div>
             </div>
 
@@ -138,14 +138,14 @@ export default function AddLandPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="px-4 py-2.5 rounded-xl border-2 border-sky-500 text-sky-600 dark:text-sky-400 font-semibold hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-all text-sm flex-1"
                 onClick={() => router.back()}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                className="gradient-btn cursor-pointer flex-1 text-base py-3"
                 disabled={loading}
               >
                 {loading ? "Saving..." : "Register Land"}

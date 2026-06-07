@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Users, FileText, Package, CheckCircle, MapPin, Loader2 } from "lucide-react"
 
 const statusConfig: Record<string, string> = {
-  PENDING: "bg-gray-100 text-gray-700",
-  UNDER_REVIEW: "bg-blue-100 text-blue-700",
-  FIELD_VERIFIED: "bg-cyan-100 text-cyan-700",
-  APPROVED: "bg-green-100 text-green-700",
-  REJECTED: "bg-red-100 text-red-700",
-  RELIEF_ASSIGNED: "bg-purple-100 text-purple-700",
-  COMPLETED: "bg-emerald-100 text-emerald-700",
+  PENDING: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
+  UNDER_REVIEW: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400",
+  FIELD_VERIFIED: "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400",
+  APPROVED: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400",
+  REJECTED: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400",
+  RELIEF_ASSIGNED: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400",
+  COMPLETED: "bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400",
 }
 
 export default function AdminDashboard() {
@@ -42,31 +42,29 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-500 mt-1">System overview and management</p>
+        <p className="text-base text-gray-500 mt-1">System overview and management</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
         {[
-          { title: "Total Users", value: users.length, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-          { title: "Total Claims", value: claims.length, icon: FileText, color: "text-orange-600", bg: "bg-orange-50" },
-          { title: "Verified Claims", value: verified, icon: CheckCircle, color: "text-green-600", bg: "bg-green-50" },
-          { title: "Relief Assigned", value: relieved, icon: Package, color: "text-purple-600", bg: "bg-purple-50" },
+          { title: "Total Users", value: users.length, icon: Users, iconColor: "text-sky-500", iconBg: "bg-sky-500/10" },
+          { title: "Total Claims", value: claims.length, icon: FileText, iconColor: "text-teal-500", iconBg: "bg-teal-500/10" },
+          { title: "Verified Claims", value: verified, icon: CheckCircle, iconColor: "text-green-500", iconBg: "bg-green-500/10" },
+          { title: "Relief Assigned", value: relieved, icon: Package, iconColor: "text-orange-500", iconBg: "bg-orange-500/10" },
         ].map((card) => {
           const Icon = card.icon
           return (
-            <Card key={card.title}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-gray-600">{card.title}</CardTitle>
-                  <div className={`p-2 rounded-lg ${card.bg}`}>
-                    <Icon size={18} className={card.color} />
-                  </div>
+            <div key={card.title} className="glass-card p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{card.title}</p>
+                  <p className="text-4xl font-bold mt-2 text-slate-800 dark:text-slate-100">{loading ? "..." : card.value}</p>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{loading ? "..." : card.value}</p>
-              </CardContent>
-            </Card>
+                <div className={`p-3 rounded-xl ${card.iconBg}`}>
+                  <Icon className={`${card.iconColor} w-6 h-6`} />
+                </div>
+              </div>
+            </div>
           )
         })}
       </div>
@@ -89,15 +87,15 @@ export default function AdminDashboard() {
             ) : (
               <div className="space-y-3">
                 {claims.slice(0, 5).map((claim) => (
-                  <div key={claim.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={claim.id} className="flex items-center justify-between rounded-lg bg-gray-50 p-3 text-base">
                     <div>
-                      <p className="text-sm font-medium">{claim.farmer.user.name}</p>
-                      <p className="text-xs text-gray-500 flex items-center gap-1">
+                      <p className="text-base font-semibold">{claim.farmer.user.name}</p>
+                      <p className="text-base text-gray-500 flex items-center gap-1">
                         <MapPin size={10} />
                         {claim.land.district} — {claim.lossPercentage}% loss
                       </p>
                     </div>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig[claim.status] || ""}`}>
+                    <span className={`text-xs px-2 py-1 rounded-full ${statusConfig[claim.status] || ""}`}>
                       {claim.status.replace(/_/g, " ")}
                     </span>
                   </div>

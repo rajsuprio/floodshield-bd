@@ -80,7 +80,7 @@ export default function VerifyClaimPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Verify Claim</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Verify Claim</h1>
         <p className="text-gray-500 mt-1">Review and verify this crop loss claim</p>
       </div>
 
@@ -168,7 +168,7 @@ export default function VerifyClaimPage() {
 
           <div className="flex gap-3 pt-2">
             <Button
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              className="gradient-btn cursor-pointer flex-1"
               onClick={() => handleSubmit("VERIFIED")}
               disabled={submitting}
             >
@@ -176,7 +176,7 @@ export default function VerifyClaimPage() {
               Mark as Verified
             </Button>
             <Button
-              className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+              className="px-4 py-2.5 rounded-xl border-2 border-sky-500 text-sky-600 dark:text-sky-400 font-semibold hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-all text-sm flex-1"
               onClick={() => handleSubmit("SUSPICIOUS")}
               disabled={submitting}
             >

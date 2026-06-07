@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { verifyToken } from "@/lib/auth"
+import { createNotification } from "@/lib/notifications"
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +12,14 @@ export async function POST(req: NextRequest) {
     if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const { claimId, packageDetails, assignedVolunteer } = await req.json()
+
+    // Get farmer info for notification
+    const claim = await prisma.damageClaim.findUnique({
+      where: { id: claimId },
+      include: { farmer: { include: { user: true } } },
+    })
+
+    if (!claim) return NextResponse.json({ error: "Claim not found" }, { status: 404 })
 
     const existing = await prisma.reliefDistribution.findUnique({
       where: { claimId },
@@ -25,6 +34,14 @@ export async function POST(req: NextRequest) {
         where: { id: claimId },
         data: { status: "RELIEF_ASSIGNED" },
       })
+
+      // Send notification
+      await createNotification(
+        claim.farmer.userId,
+        "Relief Assigned",
+        "Relief package has been assigned to your claim."
+      )
+
       return NextResponse.json(updated)
     }
 
@@ -36,6 +53,13 @@ export async function POST(req: NextRequest) {
       where: { id: claimId },
       data: { status: "RELIEF_ASSIGNED" },
     })
+
+    // Send notification
+    await createNotification(
+      claim.farmer.userId,
+      "Relief Assigned",
+      "Relief package has been assigned to your claim."
+    )
 
     return NextResponse.json(relief, { status: 201 })
   } catch (error) {

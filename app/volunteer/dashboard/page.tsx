@@ -26,10 +26,10 @@ export default function VolunteerDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Volunteer Dashboard</h1>
-        <p className="text-gray-500 mt-1">Field verification overview</p>
+        <p className="text-base text-gray-500 mt-1">Field verification overview</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { title: "Pending Claims", value: pending, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
           { title: "Under Review", value: underReview, icon: AlertTriangle, color: "text-blue-600", bg: "bg-blue-50" },
@@ -37,7 +37,7 @@ export default function VolunteerDashboard() {
         ].map((card) => {
           const Icon = card.icon
           return (
-            <Card key={card.title}>
+            <Card key={card.title} className="p-6">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-medium text-gray-600">{card.title}</CardTitle>
@@ -60,7 +60,7 @@ export default function VolunteerDashboard() {
         </CardHeader>
         <CardContent>
           <Link href="/volunteer/assigned-claims">
-            <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
+            <Button className="gradient-btn cursor-pointer w-full text-base font-medium py-3">
               <ClipboardList size={16} className="mr-2" />
               View Assigned Claims
             </Button>

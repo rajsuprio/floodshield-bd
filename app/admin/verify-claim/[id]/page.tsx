@@ -55,7 +55,7 @@ export default function AdminVerifyClaimPage() {
             Back
           </Button>
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Review Claim</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Review Claim</h1>
       </div>
 
       <Card>
@@ -63,7 +63,7 @@ export default function AdminVerifyClaimPage() {
           <CardTitle className="text-base">Claim Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-gray-500">Farmer Name</p>
               <p className="font-medium">{claim.farmer.user.name}</p>
@@ -130,7 +130,7 @@ export default function AdminVerifyClaimPage() {
 
       <div className="flex gap-3">
         <Button
-          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+          className="gradient-btn cursor-pointer flex-1"
           onClick={() => handleStatus("APPROVED")}
           disabled={submitting || claim.status === "APPROVED"}
         >
@@ -138,7 +138,7 @@ export default function AdminVerifyClaimPage() {
           Approve Claim
         </Button>
         <Button
-          className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+          className="px-4 py-2.5 rounded-xl border-2 border-sky-500 text-sky-600 dark:text-sky-400 font-semibold hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-all text-sm flex-1"
           onClick={() => handleStatus("REJECTED")}
           disabled={submitting || claim.status === "REJECTED"}
         >

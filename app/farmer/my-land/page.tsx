@@ -46,11 +46,11 @@ export default function MyLandPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Land</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Land</h1>
           <p className="text-gray-500 mt-1">All your registered agricultural land</p>
         </div>
         <Link href="/farmer/add-land">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button className="gradient-btn cursor-pointer">
             <Plus size={16} className="mr-2" />
             Add Land
           </Button>
@@ -66,7 +66,7 @@ export default function MyLandPage() {
               Register your agricultural land to start tracking flood risks
             </p>
             <Link href="/farmer/add-land">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button className="gradient-btn cursor-pointer">
                 Register Your First Land
               </Button>
             </Link>

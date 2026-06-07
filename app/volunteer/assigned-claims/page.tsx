@@ -9,9 +9,9 @@ import { Badge } from "@/components/ui/badge"
 import { MapPin, Calendar, User, Loader2, ClipboardList } from "lucide-react"
 
 const statusConfig: Record<string, string> = {
-  PENDING: "bg-gray-100 text-gray-700",
-  UNDER_REVIEW: "bg-blue-100 text-blue-700",
-  FIELD_VERIFIED: "bg-green-100 text-green-700",
+  PENDING: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
+  UNDER_REVIEW: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400",
+  FIELD_VERIFIED: "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400",
 }
 
 export default function AssignedClaimsPage() {
@@ -36,13 +36,13 @@ export default function AssignedClaimsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Assigned Claims</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Assigned Claims</h1>
         <p className="text-gray-500 mt-1">{claims.length} claims awaiting verification</p>
       </div>
 
       {claims.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+          <CardContent className="flex flex-col items-center justify-center p-5 text-center">
             <ClipboardList size={48} className="text-gray-300 mb-4" />
             <h3 className="text-lg font-semibold text-gray-600">No claims to verify</h3>
             <p className="text-gray-400 text-sm mt-1">All claims have been processed</p>
@@ -52,10 +52,10 @@ export default function AssignedClaimsPage() {
         <div className="space-y-4">
           {claims.map((claim) => (
             <Card key={claim.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="pt-5">
+              <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{claim.cropType}</h3>
+                    <h3 className="text-base font-semibold text-gray-900">{claim.cropType}</h3>
                     <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
                         <User size={12} />
@@ -67,7 +67,7 @@ export default function AssignedClaimsPage() {
                       </span>
                     </div>
                   </div>
-                  <span className={`text-xs px-3 py-1 rounded-full font-medium ${statusConfig[claim.status] || "bg-gray-100 text-gray-700"}`}>
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusConfig[claim.status] || "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400"}`}>
                     {claim.status.replace("_", " ")}
                   </span>
                 </div>
@@ -96,7 +96,7 @@ export default function AssignedClaimsPage() {
                 )}
 
                 <Link href={`/volunteer/verify-claim/${claim.id}`}>
-                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white" size="sm">
+                  <Button className="gradient-btn cursor-pointer w-full text-sm" size="sm">
                     {claim.verification ? "Update Verification" : "Verify This Claim"}
                   </Button>
                 </Link>

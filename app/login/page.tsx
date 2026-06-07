@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -10,7 +9,7 @@ import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 
 const schema = z.object({
   email: z.string().email("Invalid email address"),
@@ -20,8 +19,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function LoginPage() {
-  const router = useRouter()
   const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const [loading, setLoading] = useState(false)
 
   const {
@@ -33,10 +32,14 @@ export default function LoginPage() {
   const onSubmit = async (data: FormData) => {
   setLoading(true)
   setError("")
+  setSuccess("")
   try {
     const res = await axios.post("/api/auth/login", data)
+    setSuccess(res.data.message || "Login successful")
     const role = res.data.role.toLowerCase()
-    window.location.href = `/${role}/dashboard`
+    setTimeout(() => {
+      window.location.href = `/${role}/dashboard`
+    }, 600)
   } catch (err: any) {
     setError(err.response?.data?.error || "Something went wrong")
   } finally {
@@ -45,37 +48,48 @@ export default function LoginPage() {
 }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="text-center">
-          <div className="text-4xl mb-2">🌊</div>
-          <CardTitle className="text-2xl text-blue-900">Welcome Back</CardTitle>
-          <CardDescription>Login to FloodShield BD</CardDescription>
-        </CardHeader>
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 via-white to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-4">
+      <Card className="w-full max-w-md glass-card p-8">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-500 to-teal-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <span className="text-white text-2xl">🌊</span>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+            Welcome to FloodShield BD
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
+            Protecting farmers, delivering relief
+          </p>
+        </div>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
             <div className="space-y-1">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="your@email.com" {...register("email")} />
+              <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" id="email" type="email" placeholder="your@email.com" {...register("email")} />
               {errors.email && <p className="text-red-500 text-xs">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-1">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="Your password" {...register("password")} />
+              <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" id="password" type="password" placeholder="Your password" {...register("password")} />
               {errors.password && <p className="text-red-500 text-xs">{errors.password.message}</p>}
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-2 rounded-md">
+              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-400 rounded-xl p-4 text-sm mb-4">
                 {error}
+              </div>
+            )}
+            {success && (
+              <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-300 rounded-xl p-4 text-sm mb-4">
+                {success}
               </div>
             )}
 
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              className="gradient-btn cursor-pointer w-full text-base py-3"
               disabled={loading}
             >
               {loading ? "Logging in..." : "Login"}

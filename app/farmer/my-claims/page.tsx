@@ -26,13 +26,13 @@ interface Claim {
 }
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  PENDING: { label: "Pending", color: "bg-gray-100 text-gray-700" },
-  UNDER_REVIEW: { label: "Under Review", color: "bg-blue-100 text-blue-700" },
-  FIELD_VERIFIED: { label: "Field Verified", color: "bg-cyan-100 text-cyan-700" },
-  APPROVED: { label: "Approved", color: "bg-green-100 text-green-700" },
-  REJECTED: { label: "Rejected", color: "bg-red-100 text-red-700" },
-  RELIEF_ASSIGNED: { label: "Relief Assigned", color: "bg-purple-100 text-purple-700" },
-  COMPLETED: { label: "Completed", color: "bg-emerald-100 text-emerald-700" },
+  PENDING: { label: "Submitted", color: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400" },
+  UNDER_REVIEW: { label: "Under Review", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400" },
+  FIELD_VERIFIED: { label: "Field Verified", color: "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400" },
+  APPROVED: { label: "Approved", color: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400" },
+  REJECTED: { label: "Rejected", color: "bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-400" },
+  RELIEF_ASSIGNED: { label: "Relief Assigned", color: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400" },
+  COMPLETED: { label: "Completed", color: "bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400" },
 }
 
 export default function MyClaimsPage() {
@@ -59,11 +59,11 @@ export default function MyClaimsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Claims</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Claims</h1>
           <p className="text-gray-500 mt-1">Track your crop loss claims</p>
         </div>
         <Link href="/farmer/report-loss">
-          <Button className="bg-orange-500 hover:bg-orange-600 text-white">
+          <Button className="gradient-btn cursor-pointer">
             <Plus size={16} className="mr-2" />
             New Claim
           </Button>
@@ -79,7 +79,7 @@ export default function MyClaimsPage() {
               Submit a claim if your crops were damaged by flooding
             </p>
             <Link href="/farmer/report-loss">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white">
+              <Button className="gradient-btn cursor-pointer">
                 Report Crop Loss
               </Button>
             </Link>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { hashPassword, generateToken } from "@/lib/auth"
+import { notifyAllAdmins } from "@/lib/notifications"
 
 export async function POST(req: NextRequest) {
   try {
@@ -54,6 +55,12 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     )
 
+    // Notify all admins
+    await notifyAllAdmins(
+      "New User Registration",
+      `${name} has registered as a ${role || "FARMER"}.`
+    )
+
     response.cookies.set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -65,6 +72,7 @@ export async function POST(req: NextRequest) {
     return response
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
+    const message = error instanceof Error ? error.message : "Something went wrong"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
