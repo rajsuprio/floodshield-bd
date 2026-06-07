@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
         await prisma.floodZone.update({
           where: { id: existing.id },
           data: {
-            riskLevel,
+            riskLevel: riskLevel as any,
             radius: existing.radius || 10000,
             description: description || existing.description,
           },
@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
         await prisma.floodZone.create({
           data: {
             name: zoneName,
-            riskLevel,
+            riskLevel: riskLevel as any,
             latitude: coords.latitude,
             longitude: coords.longitude,
             radius: 10000,

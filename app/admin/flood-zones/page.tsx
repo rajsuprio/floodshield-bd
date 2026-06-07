@@ -18,6 +18,10 @@ export default function AdminFloodZonesPage() {
   const [saving, setSaving] = useState(false)
   const [fetchingLive, setFetchingLive] = useState(false)
   const [selectedPosition, setSelectedPosition] = useState<{ lat: number; lng: number } | null>(null)
+  
+  // এখানে নতুন স্টেট ডিক্লেয়ার করা হলো যা আগে মিসিং ছিল
+  const [deletingId, setDeletingId] = useState<string | null>(null) 
+
   const [form, setForm] = useState({
     name: "",
     riskLevel: "LOW",
@@ -247,8 +251,9 @@ export default function AdminFloodZonesPage() {
                     size="sm"
                     variant="destructive"
                     onClick={() => handleDelete(zone.id)}
+                    disabled={deletingId === zone.id}
                   >
-                    Delete
+                    {deletingId === zone.id ? "Deleting..." : "Delete"}
                   </Button>
                 </div>
               ))}
