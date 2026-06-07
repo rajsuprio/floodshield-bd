@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { verifyToken } from "@/lib/auth"
+import { getLandRiskLevel } from "@/lib/geoUtils"
 
 export async function POST(req: NextRequest) {
   try {
@@ -60,7 +61,21 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     })
 
-    return NextResponse.json(lands)
+    const zones = await prisma.floodZone.findMany()
+    const mappedZones = zones.map((z) => ({
+      latitude: z.latitude,
+      longitude: z.longitude,
+      // convert stored meters to km
+      radius: (z.radius ?? 0) / 1000,
+      riskLevel: z.riskLevel,
+    }))
+
+    const landsWithRisk = lands.map((l) => ({
+      ...l,
+      riskLevel: getLandRiskLevel(l.latitude, l.longitude, mappedZones),
+    }))
+
+    return NextResponse.json(landsWithRisk)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })

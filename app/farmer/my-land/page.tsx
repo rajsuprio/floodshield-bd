@@ -20,6 +20,7 @@ interface LandPlot {
   plantingDate: string | null
   harvestDate: string | null
   createdAt: string
+  riskLevel?: string | null
 }
 
 export default function MyLandPage() {
@@ -86,9 +87,22 @@ export default function MyLandPage() {
                       {land.union && `, ${land.union}`}
                     </p>
                   </div>
-                  <Badge variant="secondary" className="bg-blue-50 text-blue-700">
-                    {land.landSize} acres
-                  </Badge>
+                  <div className="flex flex-col items-end gap-2">
+                    <Badge variant="secondary" className="bg-blue-50 text-blue-700">
+                      {land.landSize} acres
+                    </Badge>
+                    <div>
+                      {land.riskLevel === "EMERGENCY" || land.riskLevel === "HIGH" ? (
+                        <span className="inline-flex items-center text-xs bg-red-50 text-red-700 px-2 py-1 rounded">⚠️ Flood Risk Zone</span>
+                      ) : land.riskLevel === "MODERATE" ? (
+                        <span className="inline-flex items-center text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded">⚡ Moderate Risk</span>
+                      ) : land.riskLevel === "LOW" ? (
+                        <span className="inline-flex items-center text-xs bg-green-50 text-green-700 px-2 py-1 rounded">✓ Low Risk</span>
+                      ) : (
+                        <span className="inline-flex items-center text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded">No Risk Data</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 border-t pt-3">

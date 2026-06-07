@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MapPin, FileText, CheckCircle, Gift, Layers } from "lucide-react"
+import { MapPin, FileText, CheckCircle, Gift } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
@@ -18,6 +18,7 @@ interface Stats {
 export default function FarmerDashboard() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [currentRisk, setCurrentRisk] = useState<string | null>(null)
 
   useEffect(() => {
     axios
@@ -25,6 +26,34 @@ export default function FarmerDashboard() {
       .then((res) => setStats(res.data))
       .catch(console.error)
       .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    // fetch lands to compute overall worst risk
+    axios
+      .get("/api/land")
+      .then((res) => {
+        type LandWithRisk = { riskLevel?: string | null }
+        const lands: LandWithRisk[] = res.data || []
+        const severity: Record<string, number> = {
+          EMERGENCY: 4,
+          HIGH: 3,
+          MODERATE: 2,
+          LOW: 1,
+        }
+        let worst: string | null = null
+        let worstScore = 0
+        for (const l of lands) {
+          const r = l.riskLevel
+          const score = r ? (severity[r] ?? 0) : 0
+          if (score > worstScore) {
+            worstScore = score
+            worst = r ?? null
+          }
+        }
+        setCurrentRisk(worst)
+      })
+      .catch(console.error)
   }, [])
 
   const cards = [
@@ -67,7 +96,7 @@ export default function FarmerDashboard() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Farmer Dashboard</h1>
         <p className="text-base text-gray-500 mt-1">
-          Welcome back! Here's an overview of your farm and claims.
+          Welcome back! Here&apos;s an overview of your farm and claims.
         </p>
       </div>
 
@@ -120,15 +149,41 @@ export default function FarmerDashboard() {
             <CardTitle className="text-base">Current Risk Level</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-3 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-              <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse" />
-              <div>
-                <p className="text-base font-semibold text-yellow-800">Moderate Risk</p>
-                <p className="text-sm text-yellow-600">
-                  Check the flood map for your area
-                </p>
+            <div className="p-4 rounded-lg">
+              {currentRisk === "EMERGENCY" || currentRisk === "HIGH" ? (
+                <div className="flex items-center gap-3 p-4 bg-red-50 rounded-lg border border-red-200">
+                  <div className="w-3 h-3 rounded-full bg-red-600 animate-pulse" />
+                  <div>
+                    <p className="text-base font-semibold text-red-800">High Flood Risk</p>
+                    <p className="text-sm text-red-600">One or more of your land plots fall inside a high-risk zone</p>
+                  </div>
+                </div>
+              ) : currentRisk === "MODERATE" ? (
+                <div className="flex items-center gap-3 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse" />
+                  <div>
+                    <p className="text-base font-semibold text-yellow-800">Moderate Risk</p>
+                    <p className="text-sm text-yellow-600">Check the flood map for your area</p>
+                  </div>
+                </div>
+              ) : currentRisk === "LOW" ? (
+                <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="w-3 h-3 rounded-full bg-green-600" />
+                  <div>
+                    <p className="text-base font-semibold text-green-800">Low Risk</p>
+                    <p className="text-sm text-green-600">No high or moderate risk detected for your lands</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="w-3 h-3 rounded-full bg-gray-400" />
+                  <div>
+                    <p className="text-base font-semibold text-gray-700">No Risk Data</p>
+                    <p className="text-sm text-gray-600">Risk data not available for your registered lands</p>
+                  </div>
+                </div>
+              )}
               </div>
-            </div>
             <Link href="/map/flood-risk" className="mt-3 block">
               <Button variant="outline" className="w-full text-sm">
                 View Flood Risk Map

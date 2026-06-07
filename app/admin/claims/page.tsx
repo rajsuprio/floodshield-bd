@@ -21,9 +21,50 @@ function statusLabel(status: string) {
   return status.replace(/_/g, " ")
 }
 
+type Claim = {
+  id: string
+  priorityScore?: number
+  status: string
+  farmer: { user: { name: string } }
+  land: { district: string }
+  cropType: string
+  lossPercentage: number
+  verification?: Record<string, unknown> | null
+}
+
+type Volunteer = {
+  id: string
+  name: string
+}
+
+function renderPriorityBadge(score: number | null | undefined) {
+  const value = score ?? 0
+  if (value >= 40) {
+    return (
+      <span className="text-xs font-semibold bg-red-100 text-red-700 rounded-full px-2.5 py-1">
+        HIGH PRIORITY ({value})
+      </span>
+    )
+  }
+
+  if (value >= 25) {
+    return (
+      <span className="text-xs font-semibold bg-yellow-100 text-yellow-700 rounded-full px-2.5 py-1">
+        MEDIUM ({value})
+      </span>
+    )
+  }
+
+  return (
+    <span className="text-xs font-semibold bg-green-100 text-green-700 rounded-full px-2.5 py-1">
+      LOW ({value})
+    </span>
+  )
+}
+
 export default function AdminClaimsPage() {
-  const [claims, setClaims] = useState<any[]>([])
-  const [volunteers, setVolunteers] = useState<any[]>([])
+  const [claims, setClaims] = useState<Claim[]>([])
+  const [volunteers, setVolunteers] = useState<Volunteer[]>([])
   const [selectedVolunteer, setSelectedVolunteer] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [assigning, setAssigning] = useState<Record<string, boolean>>({})
@@ -35,7 +76,8 @@ export default function AdminClaimsPage() {
 
     Promise.all([fetchClaims, fetchVolunteers])
       .then(([claimsRes, volunteersRes]) => {
-        setClaims(claimsRes.data)
+        const sortedClaims = claimsRes.data.slice().sort((a: Claim, b: Claim) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0))
+        setClaims(sortedClaims)
         setVolunteers(volunteersRes.data)
       })
       .catch(console.error)
@@ -109,6 +151,8 @@ export default function AdminClaimsPage() {
         ))}
       </div>
 
+      
+
       {loading ? (
         <div className="flex justify-center py-16">
           <Loader2 className="animate-spin" size={32} />
@@ -132,8 +176,8 @@ export default function AdminClaimsPage() {
                       <span className={`text-xs px-2 py-1 rounded-full ${statusConfig[claim.status] || ""}`}>
                         {statusLabel(claim.status)}
                       </span>
-                      <span className="text-sm text-purple-600 font-bold ml-auto">
-                        Score: {claim.priorityScore}
+                      <span className="ml-auto">
+                        {renderPriorityBadge(claim.priorityScore)}
                       </span>
                     </div>
                     <p className="text-sm text-gray-500 flex items-center gap-1">
