@@ -10,11 +10,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { MapPin, Package, Loader2, CheckCircle } from "lucide-react"
 
 const statusConfig: Record<string, string> = {
-  PENDING: "bg-gray-100 text-gray-700",
-  FIELD_VERIFIED: "bg-cyan-100 text-cyan-700",
-  APPROVED: "bg-green-100 text-green-700",
-  RELIEF_ASSIGNED: "bg-purple-100 text-purple-700",
-  COMPLETED: "bg-emerald-100 text-emerald-700",
+  PENDING: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
+  FIELD_VERIFIED: "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400",
+  APPROVED: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400",
+  RELIEF_ASSIGNED: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400",
+  COMPLETED: "bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400",
 }
 
 const reliefItems = [
@@ -68,7 +68,7 @@ export default function AdminReliefPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Relief Management</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Relief Management</h1>
         <p className="text-gray-500 mt-1">Assign relief packages to verified victims</p>
       </div>
 
@@ -101,7 +101,7 @@ export default function AdminReliefPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-semibold text-gray-900">{claim.farmer.user.name}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig[claim.status] || "bg-gray-100 text-gray-700"}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig[claim.status] || "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400"}`}>
                         {claim.status.replace(/_/g, " ")}
                       </span>
                       <span className="text-xs font-bold text-purple-600 ml-auto">
@@ -121,7 +121,7 @@ export default function AdminReliefPage() {
                   </div>
                   <Button
                     size="sm"
-                    className="ml-4 bg-purple-600 hover:bg-purple-700 text-white"
+                    className="gradient-btn cursor-pointer ml-4"
                     onClick={() => { setSelectedClaim(claim); setPackageDetails(claim.relief?.packageDetails || "") }}
                     disabled={claim.status === "COMPLETED"}
                   >
@@ -183,11 +183,11 @@ export default function AdminReliefPage() {
               </div>
 
               <div className="flex gap-3">
-                <Button variant="outline" className="flex-1" onClick={() => setSelectedClaim(null)}>
+                <Button variant="outline" className="px-4 py-2.5 rounded-xl border-2 border-sky-500 text-sky-600 dark:text-sky-400 font-semibold hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-all text-sm flex-1" onClick={() => setSelectedClaim(null)}>
                   Cancel
                 </Button>
                 <Button
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+                  className="gradient-btn cursor-pointer flex-1"
                   onClick={handleAssignRelief}
                   disabled={submitting || !packageDetails}
                 >

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import Link from "next/link"
 import NotificationBell from "./NotificationBell"
+import ThemeToggle from "@/components/ThemeToggle"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +15,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { LogOut, User } from "lucide-react"
 
-export default function Topbar({ role }: { role: string }) {
+export default function Topbar({ role, showThemeToggle = false }: { role: string; showThemeToggle?: boolean }) {
   const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
@@ -36,7 +37,8 @@ export default function Topbar({ role }: { role: string }) {
     .slice(0, 2) || "?"
 
   return (
-    <div className="hidden md:flex items-center justify-end gap-2 px-6 py-3 bg-white border-b border-gray-200">
+    <div className="hidden md:flex items-center justify-end px-6 py-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 gap-3">
+      {showThemeToggle && <ThemeToggle />}
       <NotificationBell />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -47,8 +49,8 @@ export default function Topbar({ role }: { role: string }) {
               </AvatarFallback>
             </Avatar>
             <div className="text-left">
-              <p className="text-sm font-medium text-gray-900">{user?.name || "..."}</p>
-              <p className="text-xs text-gray-500">{role}</p>
+              <p className="text-base font-medium text-gray-900">{user?.name || "..."}</p>
+              <p className="text-sm text-gray-500">{role}</p>
             </div>
           </button>
         </DropdownMenuTrigger>

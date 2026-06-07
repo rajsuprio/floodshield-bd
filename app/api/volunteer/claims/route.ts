@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { verifyToken } from "@/lib/auth"
+import { authorizeToken } from "@/lib/auth"
 
 export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value
-    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-
-    const payload = verifyToken(token)
+    const payload = authorizeToken(token, ["VOLUNTEER"])
     if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const claims = await prisma.damageClaim.findMany({
       where: {
-        status: { in: ["PENDING", "UNDER_REVIEW", "FIELD_VERIFIED"] },
+        verification: { volunteerId: payload.userId },
+        status: { in: ["UNDER_REVIEW", "FIELD_VERIFIED"] },
       },
       include: {
         photos: true,

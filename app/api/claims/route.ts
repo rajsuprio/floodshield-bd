@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { verifyToken } from "@/lib/auth"
+import { notifyAllAdmins } from "@/lib/notifications"
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,6 +42,16 @@ export async function POST(req: NextRequest) {
       },
       include: { photos: true },
     })
+
+    // Notify all admins
+    const userInfo = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { name: true },
+    })
+    await notifyAllAdmins(
+      "New Damage Claim Submitted",
+      `${userInfo?.name} has submitted a new damage claim for ${cropType} (${lossPercentage}% loss).`
+    )
 
     return NextResponse.json(claim, { status: 201 })
   } catch (error) {

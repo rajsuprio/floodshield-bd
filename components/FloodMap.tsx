@@ -79,7 +79,7 @@ export default function FloodMap({
 }) {
   return (
     <MapContainer
-      center={[23.8103, 90.4125]}
+      center={[23.6850, 90.3563]}
       zoom={7}
       style={{ height: "100%", width: "100%" }}
     >
@@ -87,6 +87,7 @@ export default function FloodMap({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution="© OpenStreetMap contributors"
       />
+      <RecenterMap center={[23.6850, 90.3563]} />
 
       {zones.map((zone) => (
         <Circle

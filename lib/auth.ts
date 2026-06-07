@@ -30,3 +30,11 @@ export function verifyToken(token: string) {
     return null
   }
 }
+
+export function authorizeToken(token?: string, allowedRoles: string[] = []) {
+  if (!token) return null
+  const payload = verifyToken(token)
+  if (!payload) return null
+  if (allowedRoles.length > 0 && !allowedRoles.includes(payload.role)) return null
+  return payload
+}

@@ -8,30 +8,43 @@ import { Button } from "@/components/ui/button"
 import { MapPin, CheckCircle, XCircle, Loader2, FileText } from "lucide-react"
 
 const statusConfig: Record<string, string> = {
-  PENDING: "bg-gray-100 text-gray-700",
-  UNDER_REVIEW: "bg-blue-100 text-blue-700",
-  FIELD_VERIFIED: "bg-cyan-100 text-cyan-700",
-  APPROVED: "bg-green-100 text-green-700",
-  REJECTED: "bg-red-100 text-red-700",
-  RELIEF_ASSIGNED: "bg-purple-100 text-purple-700",
-  COMPLETED: "bg-emerald-100 text-emerald-700",
+  PENDING: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
+  UNDER_REVIEW: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400",
+  FIELD_VERIFIED: "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400",
+  APPROVED: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400",
+  RELIEF_ASSIGNED: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400",
+  COMPLETED: "bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400",
+}
+
+function statusLabel(status: string) {
+  if (status === "PENDING") return "SUBMITTED"
+  return status.replace(/_/g, " ")
 }
 
 export default function AdminClaimsPage() {
   const [claims, setClaims] = useState<any[]>([])
+  const [volunteers, setVolunteers] = useState<any[]>([])
+  const [selectedVolunteer, setSelectedVolunteer] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
+  const [assigning, setAssigning] = useState<Record<string, boolean>>({})
   const [filter, setFilter] = useState("ALL")
 
   useEffect(() => {
-    axios.get("/api/admin/claims")
-      .then((res) => setClaims(res.data))
+    const fetchClaims = axios.get("/api/admin/claims")
+    const fetchVolunteers = axios.get("/api/admin/users?role=VOLUNTEER")
+
+    Promise.all([fetchClaims, fetchVolunteers])
+      .then(([claimsRes, volunteersRes]) => {
+        setClaims(claimsRes.data)
+        setVolunteers(volunteersRes.data)
+      })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
 
   const handleStatus = async (claimId: string, status: string) => {
     try {
-      await axios.put("/api/admin/claims", { claimId, status })
+      await axios.patch(`/api/admin/claims/${claimId}`, { action: "updateStatus", status })
       setClaims((prev) =>
         prev.map((c) => (c.id === claimId ? { ...c, status } : c))
       )
@@ -40,24 +53,58 @@ export default function AdminClaimsPage() {
     }
   }
 
+  const handleAssignVolunteer = async (claimId: string) => {
+    const volunteerId = selectedVolunteer[claimId]
+    if (!volunteerId) {
+      alert("Select a volunteer first")
+      return
+    }
+
+    setAssigning((prev) => ({ ...prev, [claimId]: true }))
+    try {
+      const res = await axios.patch(`/api/admin/claims/${claimId}`, {
+        action: "assignVolunteer",
+        volunteerId,
+      })
+      setClaims((prev) =>
+        prev.map((c) =>
+          c.id === claimId
+            ? {
+                ...c,
+                status: "UNDER_REVIEW",
+                verification: {
+                  ...res.data,
+                  volunteer: volunteers.find((v) => v.id === volunteerId) || null,
+                },
+              }
+            : c
+        )
+      )
+    } catch {
+      alert("Something went wrong")
+    } finally {
+      setAssigning((prev) => ({ ...prev, [claimId]: false }))
+    }
+  }
+
   const filtered = filter === "ALL" ? claims : claims.filter((c) => c.status === filter)
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">All Claims</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">All Claims</h1>
         <p className="text-gray-500 mt-1">Manage and approve damage claims</p>
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        {["ALL", "PENDING", "FIELD_VERIFIED", "APPROVED", "REJECTED"].map((f) => (
+        {["ALL", "PENDING", "UNDER_REVIEW", "FIELD_VERIFIED", "APPROVED", "RELIEF_ASSIGNED", "COMPLETED", "REJECTED"].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors
               ${filter === f ? "bg-gray-900 text-white border-gray-900" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
           >
-            {f.replace(/_/g, " ")}
+            {statusLabel(f)}
           </button>
         ))}
       </div>
@@ -77,15 +124,15 @@ export default function AdminClaimsPage() {
         <div className="space-y-3">
           {filtered.map((claim) => (
             <Card key={claim.id}>
-              <CardContent className="pt-4">
+              <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold">{claim.farmer.user.name}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig[claim.status] || ""}`}>
-                        {claim.status.replace(/_/g, " ")}
+                      <p className="text-base font-semibold">{claim.farmer.user.name}</p>
+                      <span className={`text-xs px-2 py-1 rounded-full ${statusConfig[claim.status] || ""}`}>
+                        {statusLabel(claim.status)}
                       </span>
-                      <span className="text-xs text-purple-600 font-bold ml-auto">
+                      <span className="text-sm text-purple-600 font-bold ml-auto">
                         Score: {claim.priorityScore}
                       </span>
                     </div>
@@ -97,16 +144,48 @@ export default function AdminClaimsPage() {
                       <p className="text-xs text-green-600 mt-1">✓ Field verified by volunteer</p>
                     )}
                   </div>
+                  {claim.status === "PENDING" && (
+                    <div className="grid gap-2 ml-4 w-full md:w-auto">
+                      <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                        <select
+                          value={selectedVolunteer[claim.id] || ""}
+                          onChange={(event) =>
+                            setSelectedVolunteer((prev) => ({
+                              ...prev,
+                              [claim.id]: event.target.value,
+                            }))
+                          }
+                          className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base"
+                        >
+                          <option value="">Assign volunteer</option>
+                          {volunteers.map((vol) => (
+                            <option key={vol.id} value={vol.id}>
+                              {vol.name}
+                            </option>
+                          ))}
+                        </select>
+                        <Button
+                          size="sm"
+                          className="gradient-btn cursor-pointer"
+                          disabled={!selectedVolunteer[claim.id] || assigning[claim.id]}
+                          onClick={() => handleAssignVolunteer(claim.id)}
+                        >
+                          {assigning[claim.id] ? "Assigning..." : "Assign"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
                   {claim.status === "FIELD_VERIFIED" && (
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex gap-2 ml-4 flex-wrap">
                       <Link href={`/admin/verify-claim/${claim.id}`}>
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                        <Button size="sm" className="gradient-btn cursor-pointer">
                           Review
                         </Button>
                       </Link>
                       <Button
                         size="sm"
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        className="gradient-btn cursor-pointer"
                         onClick={() => handleStatus(claim.id, "APPROVED")}
                       >
                         <CheckCircle size={14} className="mr-1" />
@@ -115,7 +194,7 @@ export default function AdminClaimsPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-red-300 text-red-600 hover:bg-red-50"
+                        className="px-4 py-2.5 rounded-xl border-2 border-sky-500 text-sky-600 dark:text-sky-400 font-semibold hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-all text-sm"
                         onClick={() => handleStatus(claim.id, "REJECTED")}
                       >
                         <XCircle size={14} className="mr-1" />

@@ -7,6 +7,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { getRoleDashboard } from "@/lib/utils"
 import { ArrowLeft, Loader2 } from "lucide-react"
 
 const FloodMap = dynamic(() => import("@/components/FloodMap"), { ssr: false })
@@ -33,13 +34,20 @@ export default function FloodRiskMapPage() {
   const [lands, setLands] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
+  const [dashboardHref, setDashboardHref] = useState(getRoleDashboard("FARMER"))
+
+  useEffect(() => {
+    axios.get("/api/auth/me")
+      .then((res) => setDashboardHref(getRoleDashboard(res.data.role)))
+      .catch(() => setDashboardHref("/login"))
+  }, [])
 
   useEffect(() => {
     Promise.all([
       axios.get("/api/flood-zones"),
       axios.get("/api/land").catch(() => ({ data: [] })),
     ]).then(([zonesRes, landsRes]) => {
-      setZones(zonesRes.data)
+      setZones(zonesRes.data.zones || [])
       setLands(landsRes.data)
     }).finally(() => setLoading(false))
   }, [])
@@ -59,7 +67,7 @@ export default function FloodRiskMapPage() {
     <div className="h-screen flex flex-col bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/farmer/dashboard">
+          <Link href={dashboardHref}>
             <Button variant="ghost" size="sm">
               <ArrowLeft size={16} className="mr-1" />
               Back
@@ -131,7 +139,9 @@ export default function FloodRiskMapPage() {
               <Loader2 className="animate-spin text-blue-600" size={32} />
             </div>
           ) : (
-            <FloodMap zones={filteredZones} lands={lands} />
+            <div className="h-[300px] md:h-[500px]">
+              <FloodMap zones={filteredZones} lands={lands} />
+            </div>
           )}
 
           <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-md p-3 z-[1000]">

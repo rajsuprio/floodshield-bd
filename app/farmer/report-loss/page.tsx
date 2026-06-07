@@ -110,7 +110,7 @@ export default function ReportLossPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Report Crop Loss</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Report Crop Loss</h1>
         <p className="text-gray-500 mt-1">Submit a flood damage claim for your land</p>
       </div>
 
@@ -137,28 +137,28 @@ export default function ReportLossPage() {
               {errors.landId && <p className="text-red-500 text-xs">{errors.landId.message}</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label>Crop Type</Label>
-                <Input placeholder="e.g. Rice" {...register("cropType")} />
+                <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" placeholder="e.g. Rice" {...register("cropType")} />
                 {errors.cropType && <p className="text-red-500 text-xs">{errors.cropType.message}</p>}
               </div>
               <div className="space-y-1">
                 <Label>Date of Damage</Label>
-                <Input type="date" {...register("dateOfDamage")} />
+                <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" type="date" {...register("dateOfDamage")} />
                 {errors.dateOfDamage && <p className="text-red-500 text-xs">{errors.dateOfDamage.message}</p>}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label>Affected Area (acres)</Label>
-                <Input type="number" step="0.01" placeholder="e.g. 1.5" {...register("affectedArea")} />
+                <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" type="number" step="0.01" placeholder="e.g. 1.5" {...register("affectedArea")} />
                 {errors.affectedArea && <p className="text-red-500 text-xs">{errors.affectedArea.message}</p>}
               </div>
               <div className="space-y-1">
                 <Label>Loss Percentage (%)</Label>
-                <Input type="number" min="1" max="100" placeholder="e.g. 75" {...register("lossPercentage")} />
+                <Input className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all text-base py-2.5 px-3" type="number" min="1" max="100" placeholder="e.g. 75" {...register("lossPercentage")} />
                 {errors.lossPercentage && <p className="text-red-500 text-xs">{errors.lossPercentage.message}</p>}
               </div>
             </div>
@@ -205,7 +205,7 @@ export default function ReportLossPage() {
             </label>
 
             {photos.length > 0 && (
-              <div className="grid grid-cols-3 gap-3 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-4">
                 {photos.map((photo) => (
                   <div key={photo.publicId} className="relative group">
                     <img
@@ -237,14 +237,14 @@ export default function ReportLossPage() {
           <Button
             type="button"
             variant="outline"
-            className="flex-1"
+            className="flex-1 text-base py-3"
             onClick={() => window.history.back()}
           >
             Cancel
           </Button>
           <Button
             type="submit"
-            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
+            className="gradient-btn cursor-pointer flex-1 text-base py-3"
             disabled={loading || uploading}
           >
             {loading ? "Submitting..." : "Submit Claim"}

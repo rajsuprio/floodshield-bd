@@ -9,13 +9,13 @@ import { Badge } from "@/components/ui/badge"
 import { Package, Users, CheckCircle, TrendingUp, MapPin, Loader2 } from "lucide-react"
 
 const statusConfig: Record<string, string> = {
-  PENDING: "bg-gray-100 text-gray-700",
-  UNDER_REVIEW: "bg-blue-100 text-blue-700",
-  FIELD_VERIFIED: "bg-cyan-100 text-cyan-700",
-  APPROVED: "bg-green-100 text-green-700",
-  REJECTED: "bg-red-100 text-red-700",
-  RELIEF_ASSIGNED: "bg-purple-100 text-purple-700",
-  COMPLETED: "bg-emerald-100 text-emerald-700",
+  PENDING: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
+  UNDER_REVIEW: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400",
+  FIELD_VERIFIED: "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400",
+  APPROVED: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400",
+  REJECTED: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400",
+  RELIEF_ASSIGNED: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400",
+  COMPLETED: "bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400",
 }
 
 export default function NGODashboard() {
@@ -36,7 +36,7 @@ export default function NGODashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">NGO Dashboard</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">NGO Dashboard</h1>
         <p className="text-gray-500 mt-1">Relief coordination overview</p>
       </div>
 
@@ -71,7 +71,7 @@ export default function NGODashboard() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">High Priority Claims</CardTitle>
             <Link href="/ngo/relief">
-              <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+              <Button size="sm" className="gradient-btn cursor-pointer">
                 Manage Relief
               </Button>
             </Link>

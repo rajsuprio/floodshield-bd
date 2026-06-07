@@ -3,13 +3,15 @@ import Topbar from "@/components/Topbar"
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, ClipboardList, Package, Menu, X, BarChart2 } from "lucide-react"
+import { getRoleDashboard } from "@/lib/utils"
+import { LayoutDashboard, Users, ClipboardList, Package, Menu, X, BarChart2, MapPin } from "lucide-react"
 
 const navItems = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: getRoleDashboard("ADMIN"), label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart2 },
   { href: "/admin/claims", label: "All Claims", icon: ClipboardList },
   { href: "/admin/relief", label: "Relief Management", icon: Package },
+  { href: "/admin/flood-zones", label: "Flood Zones", icon: MapPin },
   { href: "/admin/users", label: "User Management", icon: Users },
 ]
 
@@ -23,19 +25,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="fixed inset-0 bg-black/40 z-20 md:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <aside className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 z-30 transform transition-transform duration-200
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 md:static md:block`}>
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🌊</span>
-            <div>
-              <p className="font-bold text-blue-900 text-sm">FloodShield BD</p>
-              <p className="text-xs text-gray-500">Admin Portal</p>
-            </div>
-          </div>
+      <aside className={`fixed top-0 left-0 min-h-screen w-56 flex flex-col border-r border-slate-700 z-30 transform transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 md:static md:block`} style={{ background: 'var(--sidebar-bg)' }}>
+        <div className="px-6 py-5 border-b border-slate-700">
+          <h1 className="text-xl font-bold bg-gradient-to-r from-sky-400 to-teal-400 bg-clip-text text-transparent">
+            FloodShield BD
+          </h1>
+          <p className="text-xs text-slate-400 mt-0.5">Admin Portal</p>
         </div>
 
-        <nav className="p-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon
             const active = pathname === item.href
@@ -44,8 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                  ${active ? "bg-red-50 text-red-700" : "text-gray-600 hover:bg-gray-100"}`}
+                className={active ? "flex items-center gap-3 px-4 py-3 mx-2 rounded-xl text-sm font-medium bg-sky-500/20 text-sky-400 border border-sky-500/30" : "flex items-center gap-3 px-4 py-3 mx-2 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-700/50 hover:text-slate-200 transition-all"}
               >
                 <Icon size={18} />
                 {item.label}
@@ -54,8 +51,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
 
-        <div className="absolute bottom-6 left-4 right-4">
-          <Link href="/login" className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg">
+        <div className="mt-auto p-4">
+          <Link href="/login" className="flex items-center gap-3 px-4 py-3 mx-2 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all">
             <X size={16} />
             Logout
           </Link>
@@ -69,8 +66,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
           <span className="font-semibold text-blue-900">FloodShield BD</span>
         </header>
-        <Topbar role="Admin" />
-        <main className="flex-1 p-6 overflow-auto">{children}</main>
+        <Topbar role="Admin" showThemeToggle />
+        <main className="flex-1 p-6 overflow-auto text-base">{children}</main>
       </div>
     </div>
   )
