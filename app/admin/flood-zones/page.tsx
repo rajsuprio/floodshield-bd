@@ -12,8 +12,19 @@ const FloodZoneAdminMap = dynamic(
   { ssr: false }
 )
 
+interface FloodZone {
+  id: string
+  name: string
+  riskLevel: string
+  radius: number
+  latitude: number
+  longitude: number
+  description?: string | null
+  createdAt: string
+}
+
 export default function AdminFloodZonesPage() {
-  const [zones, setZones] = useState<any[]>([])
+  const [zones, setZones] = useState<FloodZone[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [fetchingLive, setFetchingLive] = useState(false)
@@ -21,6 +32,7 @@ export default function AdminFloodZonesPage() {
   
   // এখানে নতুন স্টেট ডিক্লেয়ার করা হলো যা আগে মিসিং ছিল
   const [deletingId, setDeletingId] = useState<string | null>(null) 
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   const [form, setForm] = useState({
     name: "",
@@ -42,7 +54,9 @@ export default function AdminFloodZonesPage() {
   }
 
   useEffect(() => {
-    loadZones()
+    ;(async () => {
+      await loadZones()
+    })()
   }, [])
 
   const handleSave = async () => {
@@ -57,23 +71,48 @@ export default function AdminFloodZonesPage() {
 
     setSaving(true)
     try {
-      await axios.post("/api/admin/flood-zones", {
-        name: form.name,
-        riskLevel: form.riskLevel,
-        radiusKm: Number(form.radiusKm),
-        latitude: selectedPosition.lat,
-        longitude: selectedPosition.lng,
-        description: form.description,
-      })
+      if (editingId) {
+        console.log("PATCH request with editingId:", editingId)
+        await axios.patch(`/api/admin/flood-zones/${editingId}`, {
+          name: form.name,
+          riskLevel: form.riskLevel,
+          radiusKm: Number(form.radiusKm),
+          latitude: selectedPosition.lat,
+          longitude: selectedPosition.lng,
+          description: form.description,
+        })
+      } else {
+        await axios.post("/api/admin/flood-zones", {
+          name: form.name,
+          riskLevel: form.riskLevel,
+          radiusKm: Number(form.radiusKm),
+          latitude: selectedPosition.lat,
+          longitude: selectedPosition.lng,
+          description: form.description,
+        })
+      }
       setForm({ name: "", riskLevel: "LOW", radiusKm: "10", description: "" })
       setSelectedPosition(null)
+      setEditingId(null)
       await loadZones()
     } catch (error) {
       console.error(error)
-      alert("Unable to create flood zone")
+      alert(editingId ? "Unable to update flood zone" : "Unable to create flood zone")
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleEdit = (zone: FloodZone) => {
+    setEditingId(zone.id)
+    setForm({
+      name: zone.name || "",
+      riskLevel: zone.riskLevel || "LOW",
+      radiusKm: ((zone.radius ?? 0) / 1000).toString(),
+      description: zone.description || "",
+    })
+    setSelectedPosition({ lat: zone.latitude, lng: zone.longitude })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleDelete = async (zoneId: string) => {
@@ -137,7 +176,7 @@ export default function AdminFloodZonesPage() {
                 </div>
               ) : (
                 <FloodZoneAdminMap
-                  zones={zones}
+                  zones={zones as any}
                   selectedPosition={selectedPosition}
                   radiusKm={Number(form.radiusKm || 10)}
                   onSelect={(lat, lng) => setSelectedPosition({ lat, lng })}
@@ -201,17 +240,18 @@ export default function AdminFloodZonesPage() {
                 disabled={saving || !selectedPosition || !form.name.trim()}
                 className="flex-1"
               >
-                {saving ? "Saving..." : "Save Zone"}
+                {saving ? (editingId ? "Updating..." : "Saving...") : (editingId ? "Update Zone" : "Save Zone")}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => {
                   setSelectedPosition(null)
                   setForm({ name: "", riskLevel: "LOW", radiusKm: "10", description: "" })
+                  setEditingId(null)
                 }}
                 className="flex-1"
               >
-                Clear
+                {editingId ? "Cancel" : "Clear"}
               </Button>
             </div>
           </div>
@@ -247,14 +287,22 @@ export default function AdminFloodZonesPage() {
                       {zone.riskLevel} • {(zone.radius / 1000).toFixed(1)} km
                     </p>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDelete(zone.id)}
-                    disabled={deletingId === zone.id}
-                  >
-                    {deletingId === zone.id ? "Deleting..." : "Delete"}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => handleEdit(zone)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDelete(zone.id)}
+                      disabled={deletingId === zone.id}
+                    >
+                      {deletingId === zone.id ? "Deleting..." : "Delete"}
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
         },
         relief: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ priorityScore: "desc" }, { createdAt: "desc" }],
     })
 
     const claimsWithScore = claims.map((claim) => {
