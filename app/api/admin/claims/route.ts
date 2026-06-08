@@ -24,7 +24,11 @@ export async function GET(req: NextRequest) {
             volunteer: { select: { id: true, name: true, email: true } },
           },
         },
-        relief: true,
+        relief: {
+          include: {
+            volunteer: { select: { id: true, name: true } },
+          },
+        },
       },
       orderBy: [{ priorityScore: "desc" }, { createdAt: "desc" }],
     })

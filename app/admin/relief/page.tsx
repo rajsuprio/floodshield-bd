@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import axios from "axios"
+import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -27,12 +28,20 @@ export default function AdminReliefPage() {
   const [loading, setLoading] = useState(true)
   const [selectedClaim, setSelectedClaim] = useState<any>(null)
   const [packageDetails, setPackageDetails] = useState("")
+  const [selectedVolunteerId, setSelectedVolunteerId] = useState("")
+  const [volunteers, setVolunteers] = useState<any[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [filter, setFilter] = useState("ALL")
 
   useEffect(() => {
-    axios.get("/api/admin/claims")
-      .then((res) => setClaims(res.data))
+    const fetchClaims = axios.get("/api/admin/claims")
+    const fetchVolunteers = axios.get("/api/admin/users?role=VOLUNTEER")
+
+    Promise.all([fetchClaims, fetchVolunteers])
+      .then(([claimsRes, volunteersRes]) => {
+        setClaims(claimsRes.data)
+        setVolunteers(volunteersRes.data)
+      })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
@@ -44,22 +53,40 @@ export default function AdminReliefPage() {
     : claims.filter((c) => c.status === filter)
 
   const handleAssignRelief = async () => {
-    if (!selectedClaim || !packageDetails) return
+    if (!selectedClaim || !packageDetails || !selectedVolunteerId) return
     setSubmitting(true)
     try {
-      await axios.post("/api/relief", {
+      const response = await axios.post("/api/relief", {
         claimId: selectedClaim.id,
         packageDetails,
+        assignedVolunteer: selectedVolunteerId,
       })
+      const relief = response.data
+      const volunteer = volunteers.find((vol) => vol.id === selectedVolunteerId) || null
+
       setClaims((prev) =>
         prev.map((c) =>
-          c.id === selectedClaim.id ? { ...c, status: "RELIEF_ASSIGNED" } : c
+          c.id === selectedClaim.id
+            ? {
+                ...c,
+                status: "RELIEF_ASSIGNED",
+                relief: {
+                  ...relief,
+                  packageDetails,
+                  assignedVolunteer: selectedVolunteerId,
+                  volunteer,
+                },
+              }
+            : c
         )
       )
       setSelectedClaim(null)
       setPackageDetails("")
-    } catch {
-      alert("Something went wrong")
+      setSelectedVolunteerId("")
+      toast.success("Relief package assigned successfully")
+    } catch (error) {
+      console.error(error)
+      toast.error("Something went wrong while assigning relief")
     } finally {
       setSubmitting(false)
     }
@@ -118,11 +145,20 @@ export default function AdminReliefPage() {
                         Field verified
                       </p>
                     )}
+                    {claim.relief?.volunteer?.name && (
+                      <p className="text-sm text-gray-600 mt-2">
+                        Assigned volunteer: {claim.relief.volunteer.name}
+                      </p>
+                    )}
                   </div>
                   <Button
                     size="sm"
                     className="gradient-btn cursor-pointer ml-4"
-                    onClick={() => { setSelectedClaim(claim); setPackageDetails(claim.relief?.packageDetails || "") }}
+                    onClick={() => {
+                      setSelectedClaim(claim)
+                      setPackageDetails(claim.relief?.packageDetails || "")
+                      setSelectedVolunteerId(claim.relief?.assignedVolunteer || "")
+                    }}
                     disabled={claim.status === "COMPLETED"}
                   >
                     <Package size={14} className="mr-1" />
@@ -135,7 +171,16 @@ export default function AdminReliefPage() {
         </div>
       )}
 
-      <Dialog open={!!selectedClaim} onOpenChange={() => setSelectedClaim(null)}>
+      <Dialog
+        open={!!selectedClaim}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedClaim(null)
+            setPackageDetails("")
+            setSelectedVolunteerId("")
+          }
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Assign Relief Package</DialogTitle>
@@ -182,6 +227,22 @@ export default function AdminReliefPage() {
                 />
               </div>
 
+              <div className="space-y-1">
+                <Label className="mb-2 block">Assign Volunteer</Label>
+                <select
+                  value={selectedVolunteerId}
+                  onChange={(e) => setSelectedVolunteerId(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                >
+                  <option value="">Select Volunteer</option>
+                  {volunteers.map((vol) => (
+                    <option key={vol.id} value={vol.id}>
+                      {vol.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="flex gap-3">
                 <Button variant="outline" className="px-4 py-2.5 rounded-xl border-2 border-sky-500 text-sky-600 dark:text-sky-400 font-semibold hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-all text-sm flex-1" onClick={() => setSelectedClaim(null)}>
                   Cancel
@@ -189,9 +250,16 @@ export default function AdminReliefPage() {
                 <Button
                   className="gradient-btn cursor-pointer flex-1"
                   onClick={handleAssignRelief}
-                  disabled={submitting || !packageDetails}
+                  disabled={submitting || !packageDetails || !selectedVolunteerId}
                 >
-                  {submitting ? "Assigning..." : "Assign Relief"}
+                  {submitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="animate-spin" size={16} />
+                      Assigning...
+                    </span>
+                  ) : (
+                    "Assign Relief"
+                  )}
                 </Button>
               </div>
             </div>

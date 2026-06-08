@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
+import { useRouter } from "next/navigation"
 import axios from "axios"
 import { Bell } from "lucide-react"
 import {
@@ -15,6 +16,8 @@ interface Notification {
   id: string
   title: string
   message: string
+  type?: string
+  link?: string
   read: boolean
   createdAt: string
 }
@@ -37,6 +40,12 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const router = useRouter()
+
+  const getNotificationIcon = (type?: string) => {
+    if (type === "FARMER_FEEDBACK") return "💬"
+    return "🔔"
+  }
 
   const fetchNotifications = async () => {
     try {
@@ -101,15 +110,22 @@ export default function NotificationBell() {
             </div>
           ) : (
             notifications.map((n) => (
-              <div key={n.id} className="px-3 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors last:border-b-0">
+              <div
+                key={n.id}
+                className={`px-3 py-3 border-b border-gray-100 transition-colors last:border-b-0 ${n.link ? "cursor-pointer hover:bg-gray-50" : ""}`}
+                onClick={() => n.link && router.push(n.link)}
+              >
                 <div className="flex items-start gap-2">
-                  {!n.read && (
-                    <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5" />
-                  )}
+                  <div className="text-lg leading-none">{getNotificationIcon(n.type)}</div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium ${n.read ? "text-gray-600" : "text-gray-900"}`}>
-                      {n.title}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      {!n.read && (
+                        <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5" />
+                      )}
+                      <p className={`text-sm font-medium ${n.read ? "text-gray-600" : "text-gray-900"}`}>
+                        {n.title}
+                      </p>
+                    </div>
                     <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
                       {n.message}
                     </p>

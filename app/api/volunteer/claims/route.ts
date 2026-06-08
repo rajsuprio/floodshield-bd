@@ -10,8 +10,16 @@ export async function GET(req: NextRequest) {
 
     const claims = await prisma.damageClaim.findMany({
       where: {
-        verification: { volunteerId: payload.userId },
-        status: { in: ["UNDER_REVIEW", "FIELD_VERIFIED"] },
+        OR: [
+          {
+            verification: { volunteerId: payload.userId },
+            status: { in: ["UNDER_REVIEW", "FIELD_VERIFIED"] },
+          },
+          {
+            relief: { assignedVolunteer: payload.userId },
+            status: "RELIEF_ASSIGNED",
+          },
+        ],
       },
       include: {
         photos: true,
@@ -20,6 +28,11 @@ export async function GET(req: NextRequest) {
           include: { user: { select: { name: true, email: true } } },
         },
         verification: true,
+        relief: {
+          include: {
+            volunteer: { select: { id: true, name: true } },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     })

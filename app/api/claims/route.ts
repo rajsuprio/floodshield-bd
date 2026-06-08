@@ -75,7 +75,15 @@ export async function GET(req: NextRequest) {
 
     const claims = await prisma.damageClaim.findMany({
       where: { farmerId: farmer.id },
-      include: { photos: true, land: true },
+      include: {
+        photos: true,
+        land: true,
+        relief: {
+          include: {
+            volunteer: { select: { id: true, name: true } },
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     })
 

@@ -139,7 +139,7 @@ export default function FloodRiskMapPage() {
               <Loader2 className="animate-spin text-blue-600" size={32} />
             </div>
           ) : (
-            <div className="h-[300px] md:h-[500px]">
+            <div className="w-full h-[calc(100vh-120px)] min-h-[500px]">
               <FloodMap zones={filteredZones} lands={lands} />
             </div>
           )}
