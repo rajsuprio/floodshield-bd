@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MapPin, FileText, CheckCircle, Gift } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { getServerSession } from "next-auth"
+import { NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma" 
 
 interface Stats {
   totalLand: number
@@ -194,4 +197,126 @@ export default function FarmerDashboard() {
       </div>
     </div>
   )
+}
+
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } },
+) {
+  try {
+    const session = await getServerSession()
+    if (!session?.user?.email) {
+      return new NextResponse("Unauthorized", { status: 401 })
+    }
+
+    const reliefId = params.id
+    const body = await req.json()
+    const { farmerFeedback, farmerRating } = body
+
+    if (farmerFeedback === undefined && farmerRating === undefined) {
+      return new NextResponse("No feedback provided", { status: 400 })
+    }
+
+    // FIX: Accessing through standard uppercase/lowercase object property fallback check
+    // If your schema uses lowercase, NextJS Turbopack cache sometimes needs Pascal dynamic check
+    const prismaModel = (prisma as any).reliefAssignment || (prisma as any).ReliefAssignment;
+    
+    if (!prismaModel) {
+      return new NextResponse("Prisma model ReliefAssignment configuration missing", { status: 500 })
+    }
+
+    const existingRelief = await prismaModel.findUnique({
+      where: { id: reliefId },
+      include: {
+        claim: {
+          include: {
+            farmer: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        },
+        assignedVolunteer: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    })
+
+    if (!existingRelief) {
+      return new NextResponse("Relief assignment not found", { status: 404 })
+    }
+
+    const updateData: Record<string, unknown> = {}
+    if (farmerFeedback !== undefined) updateData.farmerFeedback = farmerFeedback
+    if (farmerRating !== undefined) updateData.farmerRating = farmerRating
+
+    const updatedRelief = await prismaModel.update({
+      where: { id: reliefId },
+      data: updateData,
+    })
+
+    const admins = await prisma.user.findMany({
+      where: { role: "ADMIN" },
+      select: { id: true },
+    })
+
+    const notifications: Array<{
+      userId: string
+      title: string
+      message: string
+      link?: string
+    }> = []
+
+    const farmerName =
+      existingRelief.claim?.farmer?.user?.name ??
+      "Farmer"
+
+    if (farmerFeedback) {
+      admins.forEach((admin) => {
+        notifications.push({
+          userId: admin.id,
+          title: "New farmer feedback",
+          message: `${farmerName} submitted delivery feedback for claim ${existingRelief.claimId}.`,
+          link: `/admin/claims/${existingRelief.claimId}`,
+        })
+      })
+    }
+
+    if (
+      farmerRating !== undefined &&
+      existingRelief.assignedVolunteerId
+    ) {
+      notifications.push({
+        userId: existingRelief.assignedVolunteerId,
+        title: "You received a volunteer rating",
+        message: `${farmerName} rated your distribution ${farmerRating} star(s).`,
+        link: `/volunteer/assigned-claims`,
+      })
+    }
+
+    if (notifications.length > 0) {
+      await prisma.notification.createMany({
+        data: notifications,
+      })
+    }
+
+    return NextResponse.json(updatedRelief)
+  } catch (error) {
+    console.error("Relief PUT error:", error)
+    return new NextResponse(
+      JSON.stringify({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Internal server error",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    )
+  }
 }

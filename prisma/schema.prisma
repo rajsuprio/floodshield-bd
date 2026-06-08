@@ -138,6 +138,9 @@ model ReliefDistribution {
   assignedVolunteer String?
   volunteer         User?          @relation(fields: [assignedVolunteer], references: [id])
   packageDetails    String
+  farmerFeedback    String?
+  farmerRating      Int?
+  feedbackAt        DateTime?
   deliveryStatus    DeliveryStatus @default(PENDING)
   createdAt         DateTime       @default(now())
 }
@@ -147,6 +150,8 @@ model Notification {
   userId    String
   title     String
   message   String
+  type      String?
+  link      String?
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 }

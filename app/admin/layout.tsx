@@ -4,13 +4,14 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { getRoleDashboard } from "@/lib/utils"
-import { LayoutDashboard, Users, ClipboardList, Package, Menu, X, BarChart2, MapPin } from "lucide-react"
+import { LayoutDashboard, Users, ClipboardList, Package, Menu, X, BarChart2, MapPin, MessageSquare } from "lucide-react"
 
 const navItems = [
   { href: getRoleDashboard("ADMIN"), label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart2 },
   { href: "/admin/claims", label: "All Claims", icon: ClipboardList },
   { href: "/admin/relief", label: "Relief Management", icon: Package },
+  { href: "/admin/feedback", label: "Farmer Feedback", icon: MessageSquare },
   { href: "/admin/flood-zones", label: "Flood Zones", icon: MapPin },
   { href: "/admin/users", label: "User Management", icon: Users },
 ]

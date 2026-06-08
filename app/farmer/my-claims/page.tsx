@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import axios from "axios"
+import { toast } from "sonner"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -23,6 +24,13 @@ interface Claim {
     district: string
     upazila: string
   }
+  relief?: {
+    id: string
+    packageDetails: string
+    farmerFeedback?: string | null
+    farmerRating?: number | null
+    volunteer?: { id: string; name: string } | null
+  }
 }
 
 const statusConfig: Record<string, { label: string; color: string }> = {
@@ -38,6 +46,9 @@ const statusConfig: Record<string, { label: string; color: string }> = {
 export default function MyClaimsPage() {
   const [claims, setClaims] = useState<Claim[]>([])
   const [loading, setLoading] = useState(true)
+  const [feedback, setFeedback] = useState<Record<string, string>>({})
+  const [rating, setRating] = useState<Record<string, number>>({})
+  const [submitting, setSubmitting] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     axios
@@ -46,6 +57,30 @@ export default function MyClaimsPage() {
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
+
+  const handleSubmitFeedback = async (reliefId: string) => {
+    setSubmitting((prev) => ({ ...prev, [reliefId]: true }))
+    try {
+      const response = await axios.put(`/api/relief/${reliefId}`, {
+        farmerFeedback: feedback[reliefId],
+        farmerRating: rating[reliefId],
+      })
+      setClaims((prev) =>
+        prev.map((claim) =>
+          claim.relief?.id === reliefId
+            ? { ...claim, relief: response.data }
+            : claim
+        )
+      )
+      toast.success("Thank you for your feedback")
+    } catch (error) {
+      console.error(error)
+      const msg = (error as any)?.response?.data?.error || (error as any)?.message || "Unable to submit feedback. Please try again."
+      toast.error(msg)
+    } finally {
+      setSubmitting((prev) => ({ ...prev, [reliefId]: false }))
+    }
+  }
 
   if (loading) {
     return (
@@ -141,6 +176,72 @@ export default function MyClaimsPage() {
                           +{claim.photos.length - 3}
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {claim.status === "COMPLETED" && claim.relief && (
+                    <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="text-sm font-semibold text-slate-900">Relief Delivery Feedback</p>
+                      <p className="text-xs text-slate-500 mb-3">Tell us if you received the package clearly and rate the volunteer.</p>
+
+                      {claim.relief.volunteer && (
+                        <p className="text-xs text-slate-500 mb-3">
+                          Assigned volunteer: <span className="font-medium text-slate-700">{claim.relief.volunteer.name}</span>
+                        </p>
+                      )}
+
+                      <div className="space-y-3 mb-3">
+                        <div>
+                          <p className="text-xs text-slate-500">Package received</p>
+                          <p className="text-sm text-slate-700 mt-1">{claim.relief.packageDetails}</p>
+                        </div>
+
+                        {claim.relief.farmerRating == null ? (
+                          <>
+                            <div>
+                              <p className="text-xs text-slate-500">Rate the volunteer</p>
+                              <div className="flex gap-2 mt-2 text-yellow-500">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <button
+                                    key={star}
+                                    type="button"
+                                    onClick={() => setRating((prev) => ({ ...prev, [claim.relief!.id]: star }))}
+                                    className={`text-xl ${rating[claim.relief?.id ?? ''] >= star ? "text-amber-500" : "text-slate-300"}`}
+                                  >
+                                    ★
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="text-xs text-slate-500">Feedback</label>
+                              <textarea
+                                value={feedback[claim.relief.id] || ""}
+                                onChange={(e) => setFeedback((prev) => ({ ...prev, [claim.relief!.id]: e.target.value }))}
+                                rows={3}
+                                className="mt-2 w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-900 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                                placeholder="Did you receive the items clearly?"
+                              />
+                            </div>
+
+                            <Button
+                              className="gradient-btn cursor-pointer w-full text-sm"
+                              disabled={submitting[claim.relief.id] || !feedback[claim.relief.id]}
+                              onClick={() => handleSubmitFeedback(claim.relief!.id)}
+                            >
+                              {submitting[claim.relief.id] ? "Submitting..." : "Submit Feedback"}
+                            </Button>
+                          </>
+                        ) : (
+                          <div className="space-y-2">
+                            <p className="text-xs text-slate-500">Volunteer rating</p>
+                            <p className="text-sm font-medium text-slate-800">{claim.relief.farmerRating} / 5</p>
+                            <p className="text-xs text-slate-500">Feedback</p>
+                            <p className="text-sm text-slate-700">{claim.relief.farmerFeedback}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </CardContent>

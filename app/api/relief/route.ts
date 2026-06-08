@@ -35,12 +35,19 @@ export async function POST(req: NextRequest) {
         data: { status: "RELIEF_ASSIGNED" },
       })
 
-      // Send notification
+      // Send notifications
       await createNotification(
         claim.farmer.userId,
         "Relief Assigned",
         "Relief package has been assigned to your claim."
       )
+      if (assignedVolunteer) {
+        await createNotification(
+          assignedVolunteer,
+          "New Relief Distribution",
+          `A relief claim has been assigned to you for distribution to ${claim.farmer.user.name}.`
+        )
+      }
 
       return NextResponse.json(updated)
     }
@@ -54,12 +61,19 @@ export async function POST(req: NextRequest) {
       data: { status: "RELIEF_ASSIGNED" },
     })
 
-    // Send notification
+    // Send notifications
     await createNotification(
       claim.farmer.userId,
       "Relief Assigned",
       "Relief package has been assigned to your claim."
     )
+    if (assignedVolunteer) {
+      await createNotification(
+        assignedVolunteer,
+        "New Relief Distribution",
+        `A relief claim has been assigned to you for distribution to ${claim.farmer.user.name}.`
+      )
+    }
 
     return NextResponse.json(relief, { status: 201 })
   } catch (error) {

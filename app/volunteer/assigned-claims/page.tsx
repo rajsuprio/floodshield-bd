@@ -5,18 +5,19 @@ import axios from "axios"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { MapPin, Calendar, User, Loader2, ClipboardList } from "lucide-react"
 
 const statusConfig: Record<string, string> = {
   PENDING: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
   UNDER_REVIEW: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400",
   FIELD_VERIFIED: "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400",
+  RELIEF_ASSIGNED: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400",
 }
 
 export default function AssignedClaimsPage() {
   const [claims, setClaims] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     axios.get("/api/volunteer/claims")
@@ -24,6 +25,26 @@ export default function AssignedClaimsPage() {
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
+
+  const handleCompleteDistribution = async (reliefId: string) => {
+    setUpdating((prev) => ({ ...prev, [reliefId]: true }))
+    try {
+      await axios.put(`/api/relief/${reliefId}`, { deliveryStatus: "COMPLETED" })
+      setClaims((prev) => prev.filter((claim) => claim.relief?.id !== reliefId))
+    } catch (error) {
+      console.error(error)
+      const msg = (error as any)?.response?.data?.error || (error as any)?.message || "Unable to complete distribution. Please try again."
+      // use toast if available
+      try {
+        const { toast } = await import("sonner")
+        toast.error(msg)
+      } catch {
+        alert(msg)
+      }
+    } finally {
+      setUpdating((prev) => ({ ...prev, [reliefId]: false }))
+    }
+  }
 
   if (loading) {
     return (
@@ -37,7 +58,7 @@ export default function AssignedClaimsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl md:text-2xl font-bold text-gray-900">Assigned Claims</h1>
-        <p className="text-gray-500 mt-1">{claims.length} claims awaiting verification</p>
+        <p className="text-gray-500 mt-1">{claims.length} claims awaiting verification or distribution completion</p>
       </div>
 
       {claims.length === 0 ? (
@@ -95,11 +116,42 @@ export default function AssignedClaimsPage() {
                   </div>
                 )}
 
-                <Link href={`/volunteer/verify-claim/${claim.id}`}>
-                  <Button className="gradient-btn cursor-pointer w-full text-sm" size="sm">
-                    {claim.verification ? "Update Verification" : "Verify This Claim"}
+                {claim.relief?.packageDetails && (
+                  <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-800">
+                    <p className="font-semibold text-slate-700 mb-2">Relief Package</p>
+                    {claim.relief.packageDetails.split("\n").map((item: string, index: number) => (
+                      <p key={index} className="leading-6">
+                        • {item}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {claim.relief?.farmerRating != null && (
+                  <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-800">
+                    <p className="font-semibold text-slate-700 mb-2">Farmer rated you: {"⭐".repeat(claim.relief.farmerRating)}</p>
+                    {claim.relief.farmerFeedback && (
+                      <p className="text-slate-700 whitespace-pre-line">{claim.relief.farmerFeedback}</p>
+                    )}
+                  </div>
+                )}
+
+                {claim.status === "RELIEF_ASSIGNED" && claim.relief ? (
+                  <Button
+                    className="gradient-btn cursor-pointer w-full text-sm"
+                    size="sm"
+                    onClick={() => handleCompleteDistribution(claim.relief.id)}
+                    disabled={updating[claim.relief.id]}
+                  >
+                    {updating[claim.relief.id] ? "Completing..." : "Mark Distribution Completed"}
                   </Button>
-                </Link>
+                ) : (
+                  <Link href={`/volunteer/verify-claim/${claim.id}`}>
+                    <Button className="gradient-btn cursor-pointer w-full text-sm" size="sm">
+                      {claim.verification ? "Update Verification" : "Verify This Claim"}
+                    </Button>
+                  </Link>
+                )}
               </CardContent>
             </Card>
           ))}

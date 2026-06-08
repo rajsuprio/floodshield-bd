@@ -21,6 +21,7 @@ export default function VolunteerDashboard() {
   const pending = claims.filter((c) => c.status === "PENDING").length
   const underReview = claims.filter((c) => c.status === "UNDER_REVIEW").length
   const verified = claims.filter((c) => c.status === "FIELD_VERIFIED").length
+  const distributions = claims.filter((c) => c.status === "RELIEF_ASSIGNED").length
 
   return (
     <div className="space-y-6">
@@ -34,6 +35,7 @@ export default function VolunteerDashboard() {
           { title: "Pending Claims", value: pending, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
           { title: "Under Review", value: underReview, icon: AlertTriangle, color: "text-blue-600", bg: "bg-blue-50" },
           { title: "Field Verified", value: verified, icon: CheckCircle, color: "text-green-600", bg: "bg-green-50" },
+          { title: "Distributions", value: distributions, icon: ClipboardList, color: "text-purple-600", bg: "bg-purple-50" },
         ].map((card) => {
           const Icon = card.icon
           return (
@@ -62,7 +64,7 @@ export default function VolunteerDashboard() {
           <Link href="/volunteer/assigned-claims">
             <Button className="gradient-btn cursor-pointer w-full text-base font-medium py-3">
               <ClipboardList size={16} className="mr-2" />
-              View Assigned Claims
+              Manage Assigned Tasks
             </Button>
           </Link>
         </CardContent>
